@@ -95,6 +95,13 @@ cat-rag/
 
 ## Build Sequence
 
+### Setup — Done
+- [x] Scaffold directory structure (`app.py`, `config.py`, `modules/`, `prompts/`)
+- [x] Create GitHub repo (private): https://github.com/Lodd193/CAT_RAG_System
+- [x] Write `requirements.txt`, `.gitignore`, `.env.example`
+- [x] Write placeholder prompt templates (`query.txt`, `extraction.txt`, `drafting.txt`, `system.txt`)
+- [x] Stub all module files
+
 ### Week 1 — Working Query Mode
 **Goal:** Ask a question, get a grounded answer with citations. Deployable and useful immediately.
 
@@ -103,7 +110,7 @@ Tasks:
 - [ ] Implement `drive_client.py` — list files, read file content (Docs, Docx, plain text)
 - [ ] Implement `document_loader.py` — load all files from 00_Live folder into context string
 - [ ] Implement `llm_client.py` — Claude API wrapper with streaming
-- [ ] Write `prompts/query.txt` — system prompt with programme context
+- [ ] Refine `prompts/query.txt` — system prompt with programme context
 - [ ] Build `app.py` — Streamlit home screen with three mode buttons, Query mode UI
 - [ ] Deploy to Streamlit Community Cloud
 - [ ] Connect `.env` secrets via Streamlit Cloud secrets manager
@@ -242,6 +249,45 @@ client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
 import ollama
 # Everything else in the codebase stays identical
 ```
+
+---
+
+---
+
+## Build Priority List
+
+Ordered by what unlocks the most value fastest. Each item is a discrete session of work.
+
+### P1 — Must do next (Week 1 blockers)
+
+1. **Google Cloud setup** — Create GCP project, enable Drive API, create service account, download credentials JSON. Without this nothing else runs.
+2. **`drive_client.py`** — Authenticate with service account, list files in a folder, read content from Google Docs and Docx files. The foundation everything else reads from.
+3. **`document_loader.py`** — Call `drive_client` to pull all files from `00_Live`, concatenate into a single context string with document name headers.
+4. **`llm_client.py`** — Thin wrapper: send messages to Claude Sonnet 4.6, stream response back. Keep it simple — one function in, streamed text out.
+5. **Query mode in `app.py`** — Wire up the Ask a Question UI: text input → `document_loader` → `llm_client` → streamed answer with source label.
+6. **Deploy to Streamlit Community Cloud** — Connect GitHub repo, add secrets, confirm it loads on mobile browser.
+
+### P2 — Week 2 (minutes processing)
+
+7. **`retriever.py`** — Voyage AI client, chunk text, embed with `voyage-3-lite`, store in ChromaDB, similarity search returning top-K chunks.
+8. **`extractor.py`** — Pass minutes to Claude with `extraction.txt` prompt, parse JSON response into decisions/actions/risks/RAID list.
+9. **Minutes UI in `app.py`** — Paste/upload minutes, show review checklist, confirm button triggers archive move + ChromaDB ingestion.
+10. **Archive move in `drive_client.py`** — Move processed file from `01_Minutes_Inbox` to `02_Archive`.
+
+### P3 — Week 3 (document drafting)
+
+11. **`drafter.py`** — Route by document type, fill `drafting.txt` prompt, call Claude, return draft text.
+12. **Draft UI in `app.py`** — Type selector, 2–3 input fields, editable text area output, save-to-Drive button.
+13. **Drive write in `drive_client.py`** — Create `.docx` in `03_Drafts` with filename convention `DD_MM_YY_RL_[DocType].docx`.
+
+### P4 — Polish (Week 4, do last)
+
+14. Inbox banner — detect files in `01_Minutes_Inbox` on app load, surface alert.
+15. Richer citations — show document name and section per answer chunk.
+16. Prompt tuning — iterate all three prompts against real CAT documents.
+17. Error handling — graceful failures for API errors and Drive permission issues.
+18. Loading states — spinners throughout.
+19. Mobile usability pass.
 
 ---
 
