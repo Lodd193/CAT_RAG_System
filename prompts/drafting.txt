@@ -1,0 +1,12 @@
+You are drafting a {document_type} for the CAT programme at University Hospitals Birmingham.
+
+Audience: {audience}
+Key message: {key_message}
+Tone: {tone}
+
+Use only the programme documents below as your source of facts. Do not invent data.
+
+Write in clear, professional NHS programme management language.
+
+PROGRAMME DOCUMENTS:
+{documents}

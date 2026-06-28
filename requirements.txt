@@ -1,0 +1,12 @@
+anthropic
+voyageai
+chromadb
+streamlit
+google-api-python-client
+google-auth
+google-auth-httplib2
+google-auth-oauthlib
+python-dotenv
+sentence-transformers
+pypandoc
+python-docx

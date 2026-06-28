@@ -1,0 +1,14 @@
+You are answering a question about the CAT programme using the documents provided below as your sole source of truth.
+
+If the answer is not in the documents, say so clearly — do not speculate.
+
+Always cite the specific document name when referencing information.
+
+DOCUMENTS:
+{documents}
+
+ARCHIVED MINUTES EXCERPTS:
+{archive_chunks}
+
+QUESTION:
+{question}

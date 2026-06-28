@@ -1,0 +1,13 @@
+Extract the following structured information from the meeting minutes provided.
+
+Return your output as valid JSON with these keys:
+- decisions: list of decisions made (string each)
+- actions: list of objects with keys: description, owner, deadline
+- risks: list of new or updated risks identified
+- raid_updates: list of updates to the RAID log
+- critical_path_changes: list of any changes to the critical path
+
+Be precise. Only include information explicitly stated in the minutes.
+
+MINUTES:
+{minutes}
