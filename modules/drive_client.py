@@ -1,5 +1,6 @@
 import io
 import json
+import socket
 
 import openpyxl
 
@@ -13,13 +14,16 @@ import config
 _SCOPES = ["https://www.googleapis.com/auth/drive"]
 _service_cache = None
 
+# Prevent Drive API calls from hanging indefinitely on Streamlit Cloud
+socket.setdefaulttimeout(30)
+
 
 def _get_service():
     global _service_cache
     if _service_cache is None:
         creds_info = json.loads(config.GOOGLE_SERVICE_ACCOUNT_JSON)
         creds = service_account.Credentials.from_service_account_info(creds_info, scopes=_SCOPES)
-        _service_cache = build("drive", "v3", credentials=creds)
+        _service_cache = build("drive", "v3", credentials=creds, static_discovery=True)
     return _service_cache
 
 
