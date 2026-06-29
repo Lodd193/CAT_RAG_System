@@ -3,16 +3,26 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
+def _secret(key):
+    """Read from st.secrets (Streamlit Cloud) with os.getenv fallback (local)."""
+    try:
+        import streamlit as st
+        return st.secrets[key]
+    except Exception:
+        return os.getenv(key)
+
+
 # Anthropic
-ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
+ANTHROPIC_API_KEY = _secret("ANTHROPIC_API_KEY")
 CLAUDE_MODEL = "claude-sonnet-4-6"
 
 # Voyage AI
-VOYAGE_API_KEY = os.getenv("VOYAGE_API_KEY")
+VOYAGE_API_KEY = _secret("VOYAGE_API_KEY")
 VOYAGE_MODEL = "voyage-3-lite"
 
 # Google Drive
-GOOGLE_SERVICE_ACCOUNT_JSON = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON")
+GOOGLE_SERVICE_ACCOUNT_JSON = _secret("GOOGLE_SERVICE_ACCOUNT_JSON")
 DRIVE_BASE_FOLDER_ID = "16mWWBNRdOlHt0PoOBMcY32NqN-3v4Fw5"
 LIVE_FOLDER_NAME = "00_Live"
 INBOX_FOLDER_NAME = "01_Minutes_Inbox"
