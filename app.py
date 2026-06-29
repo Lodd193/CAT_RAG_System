@@ -1,11 +1,41 @@
+from datetime import datetime
+
 import streamlit as st
 
 import config
 from modules.document_loader import load_live_documents
 from modules.drive_client import get_folder_id, list_files, read_file, move_file
-from modules.llm_client import stream_query
+from modules.drafter import create_docx, draft_document
 from modules.extractor import extract_from_minutes
+from modules.llm_client import stream_query
 from modules.retriever import embed_and_store, search, archive_chunk_count
+
+_DOC_TYPES = {
+    "Stakeholder Update": [
+        {"key": "audience", "label": "Audience", "placeholder": "e.g. Executive Leadership Team, Divisional Directors", "area": False},
+        {"key": "key_message", "label": "Key message", "placeholder": "e.g. Programme on track; Band 3 recruitment risk resolved", "area": False},
+        {"key": "period", "label": "Period covered", "placeholder": "e.g. June 2026", "area": False},
+    ],
+    "Board Paper Section": [
+        {"key": "section_title", "label": "Section title", "placeholder": "e.g. Programme Status, Financial Update", "area": False},
+        {"key": "key_message", "label": "Key message", "placeholder": "e.g. Three workstreams RAG green; one amber due to staffing", "area": False},
+        {"key": "audience", "label": "Audience", "placeholder": "e.g. Programme Board, Trust Board", "area": False},
+    ],
+    "Agenda": [
+        {"key": "meeting_name", "label": "Meeting name", "placeholder": "e.g. CAT Programme Board", "area": False},
+        {"key": "meeting_date", "label": "Date and time", "placeholder": "e.g. 15 July 2026, 10:00–12:00", "area": False},
+        {"key": "items", "label": "Key agenda items (one per line)", "placeholder": "Programme status update\nRAID log review\nStaffing update", "area": True},
+    ],
+    "Workstream Update": [
+        {"key": "workstream", "label": "Workstream name", "placeholder": "e.g. Band 3 Admin Restructure", "area": False},
+        {"key": "period", "label": "Period", "placeholder": "e.g. June 2026", "area": False},
+        {"key": "progress", "label": "Progress summary", "placeholder": "e.g. Recruitment on track, 3 of 5 posts filled", "area": False},
+    ],
+    "Action Log": [
+        {"key": "meeting_name", "label": "Meeting name", "placeholder": "e.g. CAT Programme Board — June 2026", "area": False},
+        {"key": "actions", "label": "Actions (one per line: description — owner — deadline)", "placeholder": "Circulate RAID log — Richard — 30 June\nConfirm IG sign-off — Matt — 7 July", "area": True},
+    ],
+}
 
 st.set_page_config(page_title="CAT Programme Assistant", layout="wide")
 st.title("CAT Programme Assistant")
@@ -235,4 +265,62 @@ elif mode == "Process Minutes":
 
 # ── Draft Document ─────────────────────────────────────────────────────────────
 elif mode == "Draft Document":
-    st.info("Document drafting — coming in Week 3")
+
+    st.subheader("Draft a Document")
+
+    doc_type = st.selectbox("Document type:", list(_DOC_TYPES.keys()))
+
+    user_inputs = {}
+    for field in _DOC_TYPES[doc_type]:
+        if field["area"]:
+            user_inputs[field["key"]] = st.text_area(
+                field["label"], placeholder=field["placeholder"], height=120
+            )
+        else:
+            user_inputs[field["key"]] = st.text_input(
+                field["label"], placeholder=field["placeholder"]
+            )
+
+    if st.button("Draft", type="primary"):
+        if not any(v.strip() for v in user_inputs.values()):
+            st.warning("Fill in at least one field before drafting.")
+        else:
+            # Load live context if not already in session
+            if "live_context" not in st.session_state:
+                with st.spinner("Loading programme documents…"):
+                    try:
+                        context, _ = load_live_documents()
+                        st.session_state.live_context = context
+                        st.session_state.live_skipped = _
+                    except Exception as e:
+                        st.error(f"Could not load documents from Drive: {e}")
+                        st.stop()
+            with st.spinner("Drafting…"):
+                try:
+                    draft = draft_document(doc_type, user_inputs, st.session_state.live_context)
+                    st.session_state.draft_text = draft
+                    st.session_state.draft_type = doc_type
+                except Exception as e:
+                    st.error(f"Drafting failed: {e}")
+
+    if "draft_text" in st.session_state:
+        st.divider()
+        edited = st.text_area(
+            "Review and edit draft:",
+            value=st.session_state.draft_text,
+            height=500,
+            key="draft_editor",
+        )
+        today = datetime.now().strftime("%d_%m_%y")
+        doc_slug = st.session_state.draft_type.replace(" ", "")
+        filename = f"{today}_RL_{doc_slug}.docx"
+        st.download_button(
+            label=f"Download {filename}",
+            data=create_docx(edited),
+            file_name=filename,
+            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        )
+        if st.button("Clear draft"):
+            st.session_state.pop("draft_text", None)
+            st.session_state.pop("draft_type", None)
+            st.rerun()
