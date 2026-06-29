@@ -4,6 +4,8 @@ from modules.document_loader import load_live_documents
 from modules.llm_client import stream_query
 
 st.set_page_config(page_title="CAT Programme Assistant", layout="wide")
+# TEMP DEBUG — remove after confirming secrets work
+import os; st.caption(f"DEBUG secrets keys: {list(st.secrets.keys()) if st.secrets else 'empty'} | ANTHROPIC env: {'set' if os.getenv('ANTHROPIC_API_KEY') else 'None'} | DRIVE env: {'set' if os.getenv('GOOGLE_SERVICE_ACCOUNT_JSON') else 'None'}")
 st.title("CAT Programme Assistant")
 st.caption("Clinical Administration Transformation — University Hospitals Birmingham")
 
