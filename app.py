@@ -41,6 +41,18 @@ st.set_page_config(page_title="CAT Programme Assistant", layout="wide")
 st.title("CAT Programme Assistant")
 st.caption("Clinical Administration Transformation — University Hospitals Birmingham")
 
+# ── Authentication gate ────────────────────────────────────────────────────────
+if config.APP_PASSWORD and not st.session_state.get("authenticated"):
+    st.divider()
+    pwd = st.text_input("Access password", type="password")
+    if st.button("Sign in", type="primary"):
+        if pwd == config.APP_PASSWORD:
+            st.session_state.authenticated = True
+            st.rerun()
+        else:
+            st.error("Incorrect password.")
+    st.stop()
+
 mode = st.radio(
     "Select mode:",
     ["Ask a Question", "Process Minutes", "Draft Document"],
@@ -60,7 +72,8 @@ if mode == "Ask a Question":
                 st.session_state.live_context = context
                 st.session_state.live_skipped = skipped
             except Exception as e:
-                st.error(f"Could not load documents from Drive: {e}")
+                print(f"[ERROR] Drive load failed: {e}")
+                st.error("Could not load documents from Google Drive. Try reloading, or contact the programme administrator.")
                 st.stop()
 
     context = st.session_state.live_context
@@ -118,7 +131,8 @@ elif mode == "Process Minutes":
                     st.session_state.inbox_files = list_files(inbox_id)
                     st.session_state.inbox_folder_id = inbox_id
                 except Exception as e:
-                    st.error(f"Could not access inbox: {e}")
+                    print(f"[ERROR] Inbox access failed: {e}")
+                    st.error("Could not access the Drive inbox. Try reloading.")
                     st.session_state.inbox_files = []
 
         inbox_files = st.session_state.get("inbox_files", [])
@@ -136,7 +150,8 @@ elif mode == "Process Minutes":
                 try:
                     text_to_process = read_file(inbox_file["id"], inbox_file["mimeType"])
                 except Exception as e:
-                    st.error(f"Could not read file: {e}")
+                    print(f"[ERROR] Drive file read failed: {e}")
+                    st.error("Could not read the selected file from Drive.")
                     text_to_process = None
 
         if not text_to_process or not text_to_process.strip():
@@ -151,7 +166,8 @@ elif mode == "Process Minutes":
                     # Clear any previous confirm state
                     st.session_state.pop("archived", None)
                 except Exception as e:
-                    st.error(f"Extraction failed: {e}")
+                    print(f"[ERROR] Extraction failed: {e}")
+                    st.error("Extraction failed. Check that the minutes text is readable and try again.")
 
     # ── Review panel ──────────────────────────────────────────────────────────
     if "extracted" in st.session_state and "archived" not in st.session_state:
@@ -247,7 +263,8 @@ elif mode == "Process Minutes":
                         st.session_state.pop(key, None)
                     st.rerun()
                 except Exception as e:
-                    st.error(f"Archive failed: {e}")
+                    print(f"[ERROR] Archive failed: {e}")
+                    st.error("Archiving failed. The document was not moved or embedded. Try again.")
 
     if "archived" in st.session_state:
         a = st.session_state.archived
@@ -293,7 +310,8 @@ elif mode == "Draft Document":
                         st.session_state.live_context = context
                         st.session_state.live_skipped = _
                     except Exception as e:
-                        st.error(f"Could not load documents from Drive: {e}")
+                        print(f"[ERROR] Drive load failed (draft mode): {e}")
+                        st.error("Could not load documents from Google Drive. Try reloading.")
                         st.stop()
             with st.spinner("Drafting…"):
                 try:
@@ -301,7 +319,8 @@ elif mode == "Draft Document":
                     st.session_state.draft_text = draft
                     st.session_state.draft_type = doc_type
                 except Exception as e:
-                    st.error(f"Drafting failed: {e}")
+                    print(f"[ERROR] Drafting failed: {e}")
+                    st.error("Drafting failed. Try again, or contact the programme administrator.")
 
     if "draft_text" in st.session_state:
         st.divider()

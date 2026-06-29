@@ -13,6 +13,9 @@ def _secret(key):
         return os.getenv(key)
 
 
+# App access
+APP_PASSWORD = _secret("APP_PASSWORD")  # set in Streamlit secrets; if absent, auth is skipped (local dev)
+
 # Anthropic
 ANTHROPIC_API_KEY = _secret("ANTHROPIC_API_KEY")
 CLAUDE_MODEL = "claude-sonnet-4-6"
