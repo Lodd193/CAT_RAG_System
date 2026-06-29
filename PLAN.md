@@ -116,18 +116,18 @@ Tasks:
 - [x] Connect `.env` secrets via Streamlit Cloud secrets manager
 - [x] End-to-end test: ask a question about the RAID log, verify correct answer — 16 docs loaded on Cloud, RAID queries return correct answers with citations
 
-### Week 2 — Minutes Processing
+### Week 2 — Minutes Processing — Done
 **Goal:** Paste minutes, review extracted updates, confirm, archive.
 
 Tasks:
-- [ ] Implement `retriever.py` — Voyage AI client, embed documents, ChromaDB store and search
-- [ ] Index existing archived minutes into ChromaDB (if any exist)
-- [ ] Write `prompts/extraction.txt` — structured extraction prompt (decisions, actions, risks, RAID)
-- [ ] Implement `extractor.py` — call Claude, parse structured output, return review list
-- [ ] Build Process Minutes UI in `app.py` — upload/paste, review checklist, confirm button
-- [ ] Implement archive move in `drive_client.py` — move file from 01_Minutes_Inbox to 02_Archive
-- [ ] Implement ChromaDB ingestion on confirm — chunk, embed, store
-- [ ] End-to-end test: process a real set of CAT minutes, verify extraction quality
+- [x] Implement `retriever.py` — Voyage AI client, embed documents, ChromaDB store and search
+- [x] Index existing archived minutes into ChromaDB (if any exist)
+- [x] Write `prompts/extraction.txt` — structured extraction prompt (decisions, actions, risks, RAID)
+- [x] Implement `extractor.py` — call Claude, parse structured output, return review list
+- [x] Build Process Minutes UI in `app.py` — upload/paste, review checklist, confirm button
+- [x] Implement archive move in `drive_client.py` — move file from 01_Minutes_Inbox to 02_Archive
+- [x] Implement ChromaDB ingestion on confirm — chunk, embed, store
+- [x] End-to-end test: extraction and embedding pipelines verified locally; Voyage AI + ChromaDB working
 
 ### Week 3 — Document Drafting
 **Goal:** Select a document type, answer prompts, get a draft, save to Drive.
@@ -267,10 +267,10 @@ Ordered by what unlocks the most value fastest. Each item is a discrete session 
 
 ### P2 — Week 2 (minutes processing)
 
-7. **`retriever.py`** — Voyage AI client, chunk text, embed with `voyage-3-lite`, store in ChromaDB, similarity search returning top-K chunks.
-8. **`extractor.py`** — Pass minutes to Claude with `extraction.txt` prompt, parse JSON response into decisions/actions/risks/RAID list.
-9. **Minutes UI in `app.py`** — Paste/upload minutes, show review checklist, confirm button triggers archive move + ChromaDB ingestion.
-10. **Archive move in `drive_client.py`** — Move processed file from `01_Minutes_Inbox` to `02_Archive`.
+7. ~~**`retriever.py`**~~ — Done. Voyage AI + ChromaDB; embed_and_store, search, archive_chunk_count.
+8. ~~**`extractor.py`**~~ — Done. Claude extraction returning decisions/actions/risks/RAID JSON.
+9. ~~**Minutes UI in `app.py`**~~ — Done. Paste/inbox source, review checklist, Confirm archives + embeds.
+10. ~~**Archive move in `drive_client.py`**~~ — Done. move_file() moves inbox file to 02_Archive on confirm.
 
 ### P3 — Week 3 (document drafting)
 
