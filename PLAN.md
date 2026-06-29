@@ -106,15 +106,15 @@ cat-rag/
 **Goal:** Ask a question, get a grounded answer with citations. Deployable and useful immediately.
 
 Tasks:
-- [ ] Set up Google Cloud project, enable Drive API, generate service account credentials
-- [ ] Implement `drive_client.py` — list files, read file content (Docs, Docx, plain text)
-- [ ] Implement `document_loader.py` — load all files from 00_Live folder into context string
-- [ ] Implement `llm_client.py` — Claude API wrapper with streaming
-- [ ] Refine `prompts/query.txt` — system prompt with programme context
-- [ ] Build `app.py` — Streamlit home screen with three mode buttons, Query mode UI
+- [x] Set up Google Cloud project, enable Drive API, generate service account credentials
+- [x] Implement `drive_client.py` — list files, read file content (Docs, Docx, plain text, xlsx), move files, upload files
+- [x] Implement `document_loader.py` — load all files from 00_Live folder into context string (82K chars, 16 docs)
+- [x] Implement `llm_client.py` — Claude API wrapper with streaming
+- [x] Refine `prompts/query.txt` — system prompt with programme context
+- [x] Build `app.py` — Streamlit home screen with three mode buttons, Query mode UI
 - [ ] Deploy to Streamlit Community Cloud
 - [ ] Connect `.env` secrets via Streamlit Cloud secrets manager
-- [ ] End-to-end test: ask a question about the RAID log, verify correct answer
+- [x] End-to-end test: ask a question about the RAID log, verify correct answer — 32 docs, 105K chars, 10 RAID items returned correctly with citations
 
 ### Week 2 — Minutes Processing
 **Goal:** Paste minutes, review extracted updates, confirm, archive.
@@ -136,7 +136,7 @@ Tasks:
 - [ ] Write `prompts/drafting.txt` — drafting system prompt with format and voice guidance
 - [ ] Implement `drafter.py` — document type routing, structured input handling, draft generation
 - [ ] Build Draft Document UI in `app.py` — type selector, focused input fields, editable output
-- [ ] Implement Drive save in `drive_client.py` — write to 03_Drafts with correct filename convention
+- [ ] Implement draft download — service accounts cannot create files in personal Drive (no storage quota); provide .docx download button in UI instead of Drive save
 - [ ] End-to-end test: draft a stakeholder update, verify tone and content quality
 
 ### Week 4 — Polish
@@ -258,11 +258,11 @@ Ordered by what unlocks the most value fastest. Each item is a discrete session 
 
 ### P1 — Must do next (Week 1 blockers)
 
-1. **Google Cloud setup** — Create GCP project, enable Drive API, create service account, download credentials JSON. Without this nothing else runs.
-2. **`drive_client.py`** — Authenticate with service account, list files in a folder, read content from Google Docs and Docx files. The foundation everything else reads from.
-3. **`document_loader.py`** — Call `drive_client` to pull all files from `00_Live`, concatenate into a single context string with document name headers.
-4. **`llm_client.py`** — Thin wrapper: send messages to Claude Sonnet 4.6, stream response back. Keep it simple — one function in, streamed text out.
-5. **Query mode in `app.py`** — Wire up the Ask a Question UI: text input → `document_loader` → `llm_client` → streamed answer with source label.
+1. ~~**Google Cloud setup**~~ — Done. GCP project, Drive API, service account, credentials in `.env`.
+2. ~~**`drive_client.py`**~~ — Done. Auth, list, read (Docs/Docx/xlsx/txt/md), move, upload, create folder.
+3. ~~**`document_loader.py`**~~ — Done. Loads 16 documents from `00_Live`, 82K chars, 0 skipped.
+4. ~~**`llm_client.py`**~~ — Done. Streaming wrapper via `client.messages.stream()`; yields text chunks for `st.write_stream()`.
+5. ~~**Query mode in `app.py`**~~ — Done. Form input → Drive docs → `stream_query()` → `st.write_stream()`; docs cached in session_state.
 6. **Deploy to Streamlit Community Cloud** — Connect GitHub repo, add secrets, confirm it loads on mobile browser.
 
 ### P2 — Week 2 (minutes processing)
@@ -289,5 +289,5 @@ Ordered by what unlocks the most value fastest. Each item is a discrete session 
 
 ---
 
-*Last updated: 28 June 2026*
+*Last updated: 29 June 2026*
 *Owner: Richard Lodder, Programme Director, CAT Programme, UHB*
