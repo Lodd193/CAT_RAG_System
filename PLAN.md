@@ -112,9 +112,9 @@ Tasks:
 - [x] Implement `llm_client.py` — Claude API wrapper with streaming
 - [x] Refine `prompts/query.txt` — system prompt with programme context
 - [x] Build `app.py` — Streamlit home screen with three mode buttons, Query mode UI
-- [ ] Deploy to Streamlit Community Cloud
-- [ ] Connect `.env` secrets via Streamlit Cloud secrets manager
-- [x] End-to-end test: ask a question about the RAID log, verify correct answer — 32 docs, 105K chars, 10 RAID items returned correctly with citations
+- [x] Deploy to Streamlit Community Cloud
+- [x] Connect `.env` secrets via Streamlit Cloud secrets manager
+- [x] End-to-end test: ask a question about the RAID log, verify correct answer — 16 docs loaded on Cloud, RAID queries return correct answers with citations
 
 ### Week 2 — Minutes Processing
 **Goal:** Paste minutes, review extracted updates, confirm, archive.
@@ -263,7 +263,7 @@ Ordered by what unlocks the most value fastest. Each item is a discrete session 
 3. ~~**`document_loader.py`**~~ — Done. Loads 16 documents from `00_Live`, 82K chars, 0 skipped.
 4. ~~**`llm_client.py`**~~ — Done. Streaming wrapper via `client.messages.stream()`; yields text chunks for `st.write_stream()`.
 5. ~~**Query mode in `app.py`**~~ — Done. Form input → Drive docs → `stream_query()` → `st.write_stream()`; docs cached in session_state.
-6. **Deploy to Streamlit Community Cloud** — Connect GitHub repo, add secrets, confirm it loads on mobile browser.
+6. ~~**Deploy to Streamlit Community Cloud**~~ — Done. Live at https://catragsys-3mtjf29vgngvmirraqmrp6.streamlit.app/ — 16 docs load, RAID queries verified.
 
 ### P2 — Week 2 (minutes processing)
 
