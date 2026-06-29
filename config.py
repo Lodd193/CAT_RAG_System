@@ -32,6 +32,13 @@ INBOX_FOLDER_NAME = "01_Minutes_Inbox"
 ARCHIVE_FOLDER_NAME = "02_Archive"
 DRAFTS_FOLDER_NAME = "03_Drafts"
 
+# Direct folder IDs — avoids querying the parent CAT folder at runtime,
+# so the service account only needs access to these 4 folders (not the root).
+LIVE_FOLDER_ID = "1RK_NTqo6MiWIvkrJ1lIctvSyOa5XQtwu"
+INBOX_FOLDER_ID = "1sFACUuSK9unDQ-ESOHzYjgZw2-FiqebA"
+ARCHIVE_FOLDER_ID = "1oGNjESkGENg6fiGNFz9wU7dn2aCKTSpW"
+DRAFTS_FOLDER_ID = "1aM0ByO7YawWyZS__u4sH-58mFIfUTPMe"
+
 # ChromaDB
 CHROMA_PERSIST_DIR = "./chroma_db"
 CHROMA_COLLECTION = "cat_minutes_archive"

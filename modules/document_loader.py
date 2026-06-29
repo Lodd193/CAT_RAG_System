@@ -1,4 +1,4 @@
-from modules.drive_client import get_folder_id, list_files, read_file
+from modules.drive_client import list_files, read_file
 import config
 
 _SUPPORTED_MIME_TYPES = {
@@ -12,8 +12,7 @@ _SUPPORTED_MIME_TYPES = {
 
 def load_live_documents():
     """Return a single context string containing all readable files from 00_Live."""
-    folder_id = get_folder_id(config.DRIVE_BASE_FOLDER_ID, config.LIVE_FOLDER_NAME)
-    files = list_files(folder_id)
+    files = list_files(config.LIVE_FOLDER_ID)
 
     sections = []
     skipped = []

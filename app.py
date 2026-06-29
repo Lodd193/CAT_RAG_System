@@ -4,7 +4,7 @@ import streamlit as st
 
 import config
 from modules.document_loader import load_live_documents
-from modules.drive_client import get_folder_id, list_files, read_file, move_file
+from modules.drive_client import list_files, read_file, move_file
 from modules.drafter import create_docx, draft_document
 from modules.extractor import extract_from_minutes
 from modules.llm_client import stream_query
@@ -127,9 +127,7 @@ elif mode == "Process Minutes":
         if "inbox_files" not in st.session_state:
             with st.spinner("Checking Drive inbox…"):
                 try:
-                    inbox_id = get_folder_id(config.DRIVE_BASE_FOLDER_ID, config.INBOX_FOLDER_NAME)
-                    st.session_state.inbox_files = list_files(inbox_id)
-                    st.session_state.inbox_folder_id = inbox_id
+                    st.session_state.inbox_files = list_files(config.INBOX_FOLDER_ID)
                 except Exception as e:
                     print(f"[ERROR] Inbox access failed: {e}")
                     st.error("Could not access the Drive inbox. Try reloading.")
@@ -243,10 +241,7 @@ elif mode == "Process Minutes":
 
                     # Move Drive file to archive if it came from inbox
                     if st.session_state.get("inbox_file"):
-                        archive_id = get_folder_id(
-                            config.DRIVE_BASE_FOLDER_ID, config.ARCHIVE_FOLDER_NAME
-                        )
-                        move_file(st.session_state.inbox_file["id"], archive_id)
+                        move_file(st.session_state.inbox_file["id"], config.ARCHIVE_FOLDER_ID)
                         # Refresh inbox list
                         st.session_state.pop("inbox_files", None)
 
