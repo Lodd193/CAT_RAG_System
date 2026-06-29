@@ -11,12 +11,16 @@ from googleapiclient.http import MediaIoBaseDownload
 import config
 
 _SCOPES = ["https://www.googleapis.com/auth/drive"]
+_service_cache = None
 
 
 def _get_service():
-    creds_info = json.loads(config.GOOGLE_SERVICE_ACCOUNT_JSON)
-    creds = service_account.Credentials.from_service_account_info(creds_info, scopes=_SCOPES)
-    return build("drive", "v3", credentials=creds)
+    global _service_cache
+    if _service_cache is None:
+        creds_info = json.loads(config.GOOGLE_SERVICE_ACCOUNT_JSON)
+        creds = service_account.Credentials.from_service_account_info(creds_info, scopes=_SCOPES)
+        _service_cache = build("drive", "v3", credentials=creds)
+    return _service_cache
 
 
 def list_files(folder_id):
