@@ -10,4 +10,11 @@ USER INPUTS:
 PROGRAMME DOCUMENTS (live context from Google Drive 00_Live):
 {context}
 
-Output the {doc_type} text only — no explanation, no preamble, no trailing commentary.
+Formatting rules (your output will be converted to a Word document):
+- Use ## for main section headings
+- Use ### for sub-section headings
+- Use **bold** for key terms and important items inline
+- Use - for bullet points
+- Use 1. 2. 3. for numbered lists
+- Do NOT include a document title, programme name, or date header — these are added automatically
+- Output the document body only — no preamble, no trailing commentary

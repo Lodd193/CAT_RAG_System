@@ -316,7 +316,7 @@ elif mode == "Draft Document":
         filename = f"{today}_RL_{doc_slug}.docx"
         st.download_button(
             label=f"Download {filename}",
-            data=create_docx(edited),
+            data=create_docx(edited, title=st.session_state.draft_type),
             file_name=filename,
             mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         )
