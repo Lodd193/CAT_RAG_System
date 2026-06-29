@@ -129,15 +129,30 @@ Tasks:
 - [x] Implement ChromaDB ingestion on confirm — chunk, embed, store
 - [x] End-to-end test: extraction and embedding pipelines verified locally; Voyage AI + ChromaDB working
 
-### Week 3 — Document Drafting
+### Week 3 — Document Drafting — Done
 **Goal:** Select a document type, answer prompts, get a draft, save to Drive.
 
 Tasks:
-- [ ] Write `prompts/drafting.txt` — drafting system prompt with format and voice guidance
-- [ ] Implement `drafter.py` — document type routing, structured input handling, draft generation
-- [ ] Build Draft Document UI in `app.py` — type selector, focused input fields, editable output
-- [ ] Implement draft download — service accounts cannot create files in personal Drive (no storage quota); provide .docx download button in UI instead of Drive save
-- [ ] End-to-end test: draft a stakeholder update, verify tone and content quality
+- [x] Write `prompts/drafting.txt` — NHS programme management drafting prompt; instructs Claude to use ## headings, **bold**, bullet lists; omit duplicate title header
+- [x] Implement `drafter.py` — 5 doc types, Claude generation, `create_docx()` with full markdown→Word conversion: inline bold/italic, heading hierarchy, bullet/numbered lists, markdown tables → Word Table Grid, A4 margins, programme header block (title + CAT/UHB + date)
+- [x] Build Draft Document UI in `app.py` — type selector with 2–3 tailored fields per type, editable output text area
+- [x] Implement draft download — `.docx` download button with `DD_MM_YY_RL_[DocType].docx` filename convention
+- [x] End-to-end test: drafting pipeline verified locally; inline bold, tables, headings all render correctly in Word
+
+### Security Hardening — Partially done (session 29 Jun 2026)
+**Goal:** Resolve all identified security findings before wider deployment.
+
+Done in code:
+- [x] Auth gate — password check in `app.py` before any UI; skipped if `APP_PASSWORD` not set (local dev). User added `APP_PASSWORD` to Streamlit secrets.
+- [x] Error message sanitisation — all `st.error(f"...{e}")` replaced with generic user messages; full exception logged server-side via `print()` for Streamlit Cloud logs
+- [x] Prompt injection guard — added to `prompts/extraction.txt`
+- [x] Drive scope — hardcoded 4 folder IDs in `config.py`; removed all `get_folder_id()` calls from `app.py` and `document_loader.py` so service account no longer needs access to CAT root
+
+**Pending — pick up next session:**
+- [ ] **Drive sharing** — remove service account (`cat-rag-drive@cat-rag-system.iam.gserviceaccount.com`) from CAT root folder in Google Drive; share each of the 4 subfolders individually as Editor. Then run verification script to confirm ≤4 folders + contents visible.
+- [ ] **Voyage AI DPA** — obtain and file Data Processing Agreement before wider deployment. Check voyageai.com legal/privacy section.
+- [ ] **Delete secrets file** — `C:\Users\lod19\Desktop\streamlit_secrets_PASTE_THIS.txt` still may exist; delete it.
+- [ ] **End-to-end test on deployed app** — test Draft Document mode + .docx download + password gate on Streamlit Cloud after Drive sharing is corrected.
 
 ### Week 4 — Polish
 **Goal:** Production-ready, reliable, pleasant to use.
@@ -146,7 +161,6 @@ Tasks:
 - [ ] Add inbox notification — detect files in 01_Minutes_Inbox on app load, surface banner
 - [ ] Improve citations — show document name and section for every answer
 - [ ] Prompt tuning — refine all three prompts based on real usage
-- [ ] Error handling — graceful failures for API errors, Drive permission issues
 - [ ] Loading states — spinners and progress indicators throughout
 - [ ] Mobile usability check — verify all three modes work on phone browser
 - [ ] README update — setup instructions for future reference
@@ -272,11 +286,21 @@ Ordered by what unlocks the most value fastest. Each item is a discrete session 
 9. ~~**Minutes UI in `app.py`**~~ — Done. Paste/inbox source, review checklist, Confirm archives + embeds.
 10. ~~**Archive move in `drive_client.py`**~~ — Done. move_file() moves inbox file to 02_Archive on confirm.
 
-### P3 — Week 3 (document drafting)
+### P3 — Week 3 (document drafting) — Done
 
-11. **`drafter.py`** — Route by document type, fill `drafting.txt` prompt, call Claude, return draft text.
-12. **Draft UI in `app.py`** — Type selector, 2–3 input fields, editable text area output, save-to-Drive button.
-13. **Drive write in `drive_client.py`** — Create `.docx` in `03_Drafts` with filename convention `DD_MM_YY_RL_[DocType].docx`.
+11. ~~**`drafter.py`**~~ — Done. 5 doc types, Claude generation, full markdown→Word docx (bold, tables, headings, A4, header block).
+12. ~~**Draft UI in `app.py`**~~ — Done. Type selector, tailored fields, editable output, .docx download.
+13. ~~**Drive write**~~ — Done as .docx download button (service accounts can't write to personal Drive).
+
+### P3.5 — Security hardening (29 Jun 2026)
+
+14. ~~**Auth gate**~~ — Done. APP_PASSWORD in Streamlit secrets; gate in app.py.
+15. ~~**Error sanitisation**~~ — Done. Generic UI messages, full errors in server logs.
+16. ~~**Prompt injection guard**~~ — Done. Instruction added to extraction.txt.
+17. ~~**Drive scope (code)**~~ — Done. 4 folder IDs hardcoded; no CAT root queries.
+18. **Drive scope (Drive sharing)** — PENDING. Remove service account from CAT root; share 4 subfolders individually. Verify with test script.
+19. **Voyage AI DPA** — PENDING. Obtain before wider deployment.
+20. **Delete Desktop secrets file** — PENDING.
 
 ### P4 — Polish (Week 4, do last)
 
@@ -289,5 +313,5 @@ Ordered by what unlocks the most value fastest. Each item is a discrete session 
 
 ---
 
-*Last updated: 29 June 2026*
+*Last updated: 29 June 2026 (evening)*
 *Owner: Richard Lodder, Programme Director, CAT Programme, UHB*
