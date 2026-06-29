@@ -4,6 +4,8 @@ from io import BytesIO
 
 import anthropic
 from docx import Document
+from docx.oxml import OxmlElement
+from docx.oxml.ns import qn
 from docx.shared import Cm, Pt
 
 import config
@@ -27,6 +29,8 @@ def draft_document(doc_type: str, user_inputs: dict, live_context: str) -> str:
     return response.content[0].text.strip()
 
 
+# ── Docx helpers ───────────────────────────────────────────────────────────────
+
 def _add_formatted_runs(paragraph, text: str) -> None:
     """Add runs to a paragraph, rendering **bold** and *italic* markers."""
     for match in re.finditer(r"\*\*(.+?)\*\*|\*(.+?)\*|([^*]+)", text):
@@ -39,10 +43,56 @@ def _add_formatted_runs(paragraph, text: str) -> None:
             paragraph.add_run(plain_text)
 
 
+def _is_table_row(line: str) -> bool:
+    return line.startswith("|") and line.endswith("|")
+
+
+def _is_separator_row(line: str) -> bool:
+    return _is_table_row(line) and all(c in "-|: " for c in line)
+
+
+def _parse_table_row(line: str) -> list[str]:
+    return [c.strip() for c in line.strip("|").split("|")]
+
+
+def _flush_table(doc, rows: list[list[str]]) -> None:
+    if not rows:
+        return
+    ncols = max(len(r) for r in rows)
+    table = doc.add_table(rows=0, cols=ncols)
+    table.style = "Table Grid"
+
+    # Stretch table to full text-area width
+    tbl_pr = table._tbl.tblPr
+    tbl_w = tbl_pr.find(qn("w:tblW"))
+    if tbl_w is None:
+        tbl_w = OxmlElement("w:tblW")
+        tbl_pr.append(tbl_w)
+    tbl_w.set(qn("w:w"), "5000")   # 5000 twentieths of a percent = 100%
+    tbl_w.set(qn("w:type"), "pct")
+
+    for i, row_data in enumerate(rows):
+        row = table.add_row()
+        for j, cell_text in enumerate(row_data):
+            if j >= ncols:
+                break
+            para = row.cells[j].paragraphs[0]
+            _add_formatted_runs(para, cell_text)
+            if i == 0:  # header row: force all text bold
+                for run in para.runs:
+                    run.bold = True
+
+    # Space after table
+    spacer = doc.add_paragraph()
+    spacer.paragraph_format.space_after = Pt(6)
+
+
+# ── Public API ─────────────────────────────────────────────────────────────────
+
 def create_docx(text: str, title: str = "") -> bytes:
     doc = Document()
 
-    # A4 page, standard margins
+    # A4 page, standard UK margins
     section = doc.sections[0]
     section.page_width = Cm(21.0)
     section.page_height = Cm(29.7)
@@ -67,11 +117,22 @@ def create_docx(text: str, title: str = "") -> bytes:
         date_p = doc.add_paragraph(datetime.now().strftime("%d %B %Y"))
         date_p.paragraph_format.space_after = Pt(14)
 
+    table_buffer: list[list[str]] = []
+
     for line in text.splitlines():
         stripped = line.rstrip()
 
+        if _is_table_row(stripped):
+            if not _is_separator_row(stripped):
+                table_buffer.append(_parse_table_row(stripped))
+            continue  # consume separator rows silently
+
+        # Flush any accumulated table before processing normal content
+        if table_buffer:
+            _flush_table(doc, table_buffer)
+            table_buffer = []
+
         if stripped in ("---", "***", "___"):
-            # Treat horizontal rules as a visual section gap
             spacer = doc.add_paragraph()
             spacer.paragraph_format.space_after = Pt(4)
         elif stripped.startswith("### "):
@@ -95,11 +156,15 @@ def create_docx(text: str, title: str = "") -> bytes:
             _add_formatted_runs(p, re.sub(r"^\d+\.\s+", "", stripped))
             p.paragraph_format.space_after = Pt(3)
         elif stripped == "":
-            pass  # blank lines: rely on paragraph space_after for separation
+            pass  # blank lines: rely on paragraph space_after
         else:
             p = doc.add_paragraph()
             _add_formatted_runs(p, stripped)
             p.paragraph_format.space_after = Pt(6)
+
+    # Flush any table at end of text
+    if table_buffer:
+        _flush_table(doc, table_buffer)
 
     buf = BytesIO()
     doc.save(buf)
